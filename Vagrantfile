@@ -7,10 +7,10 @@ Vagrant.configure('2') do |config|
 
   # Configurate the virtual machine to use 2GB of RAM
   config.vm.provider :virtualbox do |vb|
-    vb.name = 'just_chew'
+    vb.name = 'just_chew_base'
     vb.customize ['modifyvm', :id, '--memory', '2048']
   end
-  
+
   # Configurate push target
   config.push.define 'atlas' do |push|
     push.app = 'gmcgibbon/just_chew'
