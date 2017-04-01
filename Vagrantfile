@@ -52,16 +52,14 @@ Vagrant.configure('2') do |config|
         }]
       },
       postgresql: {
-        password: {
-          postgres: 'root'
-        },
-        users: [
+        config: { listen_addresses: '*' },
+        pg_hba: [
           {
-            username: 'vagrant',
-            password: 'vagrant',
-            superuser: true,
+            type: 'host', db: 'all', user: 'all',
+            addr: 'all', method: 'trust'
           }
-        ]
+        ],
+        password: { postgres: '' }
       }
     }
   end
