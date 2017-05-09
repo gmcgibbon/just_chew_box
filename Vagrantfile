@@ -19,7 +19,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Configure omnibus plugin chef version
   if Vagrant.has_plugin?('vagrant-omnibus')
-    config.omnibus.chef_version = 'latest'
+    config.omnibus.chef_version = '12.20.3'
   end
 
   # Configurate the virtual machine to use 2GB of RAM
