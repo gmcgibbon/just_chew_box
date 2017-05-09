@@ -38,9 +38,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.forward_agent = true
 
   # Forward the Rails server default port to the host
-  config.vm.network :forwarded_port, guest: 3000, host: 3001
+  config.vm.network :forwarded_port, guest: 3000, host: 3000
   # Forward the PostgreSQL server default port to the host
-  config.vm.network :forwarded_port, guest: 5432, host: 5433
+  config.vm.network :forwarded_port, guest: 5433, host: 5433
+
+  if File.exists? '../just_chew'
+    # Sync the just_chew project for testing and debugging
+    config.vm.synced_folder '../just_chew', '/just_chew'
+  end
 
   # Enable Vagrant Berkshelf
   config.berkshelf.enabled = true
@@ -62,16 +67,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         }]
       },
       postgresql: {
-        password: {
-          postgres: 'root'
+        config: {
+          port:             '5433',
+          listen_addresses: '*'
         },
-        users: [
+        pg_hba: [
           {
-            username: 'vagrant',
-            password: 'vagrant',
-            superuser: true,
+            type: 'host', db: 'all', user: 'all',
+            addr: 'all', method: 'trust'
           }
-        ]
+        ],
+        password: { postgres: '' }
       }
     }
 
