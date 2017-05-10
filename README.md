@@ -6,13 +6,19 @@ Just Chew Box is the vagrant base box used for developing [Just Chew](https://gi
 
 In order to build this box, do the following:
 
-  1. Install the chef plugin:
+  1. Install the berkshelf plugin:
 
   ```sh
-  vagrant plugin install vagrant-librarian-chef-nochef
+  vagrant plugin install vagrant-berkshelf
   ```
 
-  2. Setup the box:
+  2. Install the omnibus plugin:
+
+  ```sh
+  vagrant plugin install vagrant-omnibus
+  ```
+
+  3. Setup the box:
 
   ```sh
   vagrant up

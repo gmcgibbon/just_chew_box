@@ -1,14 +1,32 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
-# Source: https://gorails.com/guides/using-vagrant-for-rails-development
-Vagrant.configure('2') do |config|
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = '2'
+
+Vagrant.require_version '>= 1.5.0'
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
   # Use Ubuntu 14.04 Trusty Tahr 64-bit as our operating system
   config.vm.box = 'ubuntu/trusty64'
 
+  # Set our hostname
+  config.vm.hostname = 'just-chew'
+
+  # Set a generous boot timeout for chef setup
+  config.vm.boot_timeout = 900
+
+  # Configure omnibus plugin chef version
+  if Vagrant.has_plugin?('vagrant-omnibus')
+    config.omnibus.chef_version = '12.20.3'
+  end
+
   # Configurate the virtual machine to use 2GB of RAM
   config.vm.provider :virtualbox do |vb|
-    vb.name = 'just_chew_base'
+    vb.name = 'just-chew-base'
     vb.customize ['modifyvm', :id, '--memory', '2048']
+    # vb.gui = true
   end
 
   # Configurate push target
@@ -20,22 +38,19 @@ Vagrant.configure('2') do |config|
   config.ssh.forward_agent = true
 
   # Forward the Rails server default port to the host
-  config.vm.network :forwarded_port, guest: 3000, host: 3001
+  config.vm.network :forwarded_port, guest: 3000, host: 3000
+  # Forward the PostgreSQL server default port to the host
+  config.vm.network :forwarded_port, guest: 5433, host: 5433
 
-  # Use Chef Solo to provision our virtual machine
+  if File.exists? '../just_chew'
+    # Sync the just_chew project for testing and debugging
+    config.vm.synced_folder '../just_chew', '/just_chew'
+  end
+
+  # Enable Vagrant Berkshelf
+  config.berkshelf.enabled = true
+
   config.vm.provision :chef_solo do |chef|
-    chef.channel        = 'stable'
-    chef.cookbooks_path = %w(cookbooks)
-
-    chef.add_recipe 'apt'
-    chef.add_recipe 'vim'
-    chef.add_recipe 'phantomjs2'
-    chef.add_recipe 'nodejs'
-    chef.add_recipe 'ruby_build'
-    chef.add_recipe 'ruby_rbenv::user'
-    chef.add_recipe 'postgresql::server'
-    chef.add_recipe 'postgresql::client'
-
     # Install Ruby 2.3.1 and Bundler
     # Set PostgreSQL settings
     chef.json = {
@@ -52,17 +67,22 @@ Vagrant.configure('2') do |config|
         }]
       },
       postgresql: {
-        password: {
-          postgres: 'root'
+        config: {
+          port:             '5433',
+          listen_addresses: '*'
         },
-        users: [
+        pg_hba: [
           {
-            username: 'vagrant',
-            password: 'vagrant',
-            superuser: true,
+            type: 'host', db: 'all', user: 'all',
+            addr: 'all', method: 'trust'
           }
-        ]
+        ],
+        password: { postgres: '' }
       }
     }
+
+    chef.run_list = [
+      'recipe[just_chew::default]'
+    ]
   end
 end
